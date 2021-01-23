@@ -2,6 +2,7 @@ library hidden_drawer;
 
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class HiddenDrawer extends StatefulWidget {
@@ -147,37 +148,52 @@ class HiddenDrawerState extends State<HiddenDrawer> with SingleTickerProviderSta
               child: child,
             );
           },
-          child: GestureDetector(
-            onTap: () {
-              if (isOpened) {
-                close();
-              }
-            },
-            onHorizontalDragStart: (details) {
-              final dragWidth = widget.drawerEdgeDragWidth + MediaQuery.of(context).padding.left;
-              final shouldOpen = isClosed && details.localPosition.dx <= dragWidth;
-              final shouldClose = isOpened;
-              _shouldDrag = shouldOpen || shouldClose;
-            },
-            onHorizontalDragUpdate: (details) {
-              if (!_shouldDrag) return;
-              final screenWidth = MediaQuery.of(context).size.width;
-              final xOffset = widget.drawerWidth +
-                  max(0.0, ((screenWidth - widget.drawerWidth - (screenWidth * widget.scale)) / 2));
-              _controller.value += details.primaryDelta / xOffset;
-            },
-            onHorizontalDragEnd: (details) {
-              if (!_shouldDrag) return;
+          child: RawGestureDetector(
+            gestures: {
+              TapGestureRecognizer: GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+                () => TapGestureRecognizer(),
+                (instance) {
+                  instance
+                    ..onTap = () {
+                      if (isOpened) {
+                        close();
+                      }
+                    };
+                },
+              ),
+              AllowMultipleHorizontalDragGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<AllowMultipleHorizontalDragGestureRecognizer>(
+                () => AllowMultipleHorizontalDragGestureRecognizer(),
+                (instance) {
+                  instance
+                    ..onStart = (details) {
+                      final dragWidth = widget.drawerEdgeDragWidth + MediaQuery.of(context).padding.left;
+                      final shouldOpen = isClosed && details.localPosition.dx <= dragWidth;
+                      final shouldClose = isOpened;
+                      _shouldDrag = shouldOpen || shouldClose;
+                    }
+                    ..onUpdate = (details) {
+                      if (!_shouldDrag) return;
+                      final screenWidth = MediaQuery.of(context).size.width;
+                      final xOffset = widget.drawerWidth +
+                          max(0.0, ((screenWidth - widget.drawerWidth - (screenWidth * widget.scale)) / 2));
+                      _controller.value += details.primaryDelta / xOffset;
+                    }
+                    ..onEnd = (details) {
+                      if (!_shouldDrag) return;
 
-              final dragVelocity = details.velocity.pixelsPerSecond.dx.abs();
-              if (dragVelocity >= 365) {
-                final visualVelocity = details.velocity.pixelsPerSecond.dx / MediaQuery.of(context).size.width;
-                _controller.fling(velocity: visualVelocity);
-              } else if (_controller.value < 0.5) {
-                close();
-              } else {
-                open();
-              }
+                      final dragVelocity = details.velocity.pixelsPerSecond.dx.abs();
+                      if (dragVelocity >= 365) {
+                        final visualVelocity = details.velocity.pixelsPerSecond.dx / MediaQuery.of(context).size.width;
+                        _controller.fling(velocity: visualVelocity);
+                      } else if (_controller.value < 0.5) {
+                        close();
+                      } else {
+                        open();
+                      }
+                    };
+                },
+              ),
             },
             child: AbsorbPointer(
               absorbing: !isClosed,
@@ -196,5 +212,12 @@ class HiddenDrawerState extends State<HiddenDrawer> with SingleTickerProviderSta
         ),
       ],
     );
+  }
+}
+
+class AllowMultipleHorizontalDragGestureRecognizer extends HorizontalDragGestureRecognizer {
+  @override
+  void rejectGesture(int pointer) {
+    acceptGesture(pointer);
   }
 }

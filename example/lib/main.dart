@@ -61,7 +61,7 @@ class _HomeState extends State<Home> {
                       setState(() {
                         _selected = 0;
                       });
-                      //_drawerKey.currentState.close();
+                      _drawerKey.currentState.close();
                     },
                   ),
                   ListTile(
@@ -72,7 +72,7 @@ class _HomeState extends State<Home> {
                       setState(() {
                         _selected = 1;
                       });
-                      //_drawerKey.currentState.close();
+                      _drawerKey.currentState.close();
                     },
                   ),
                 ],
