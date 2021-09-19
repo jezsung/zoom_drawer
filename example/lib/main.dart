@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hidden_drawer/hidden_drawer.dart';
+import 'package:zoom_drawer/zoom_drawer.dart';
 
 void main() {
   runApp(MyApp());
@@ -9,9 +9,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hidden Drawer Example',
+      title: 'zoom_drawer Example',
       theme: ThemeData(
-        primarySwatch: Colors.indigo,
+        primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: Home(),
@@ -21,117 +21,79 @@ class MyApp extends StatelessWidget {
 
 class Home extends StatefulWidget {
   @override
-  _HomeState createState() => _HomeState();
+  State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
-  final _drawerKey = GlobalKey<HiddenDrawerState>();
+class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
+  late final ZoomDrawerController _controller;
 
-  int _selected = 0;
+  @override
+  void initState() {
+    super.initState();
+    _controller = ZoomDrawerController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (_drawerKey.currentState.isOpened) {
-          _drawerKey.currentState.close();
+        if (_controller.isOpen) {
+          await _controller.close();
           return false;
         } else {
           return true;
         }
       },
-      child: HiddenDrawer(
-        key: _drawerKey,
+      child: ZoomDrawer(
+        controller: _controller,
+        childBorderRadius: BorderRadius.circular(16),
         drawer: Material(
           color: Colors.transparent,
           child: SafeArea(
-            child: ListTileTheme(
-              iconColor: Colors.white,
-              textColor: Colors.white,
-              selectedColor: Colors.white,
-              selectedTileColor: Colors.white.withOpacity(0.25),
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  ListTile(
-                    leading: Icon(Icons.home),
-                    title: Text('Home'),
-                    selected: _selected == 0,
-                    onTap: () {
-                      setState(() {
-                        _selected = 0;
-                      });
-                      _drawerKey.currentState.close();
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.settings),
-                    title: Text('Settings'),
-                    selected: _selected == 1,
-                    onTap: () {
-                      setState(() {
-                        _selected = 1;
-                      });
-                      _drawerKey.currentState.close();
-                    },
-                  ),
-                ],
-              ),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                ListTile(
+                  leading: Icon(Icons.home),
+                  title: Text('Home'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('Settings'),
+                ),
+              ],
             ),
           ),
         ),
-        child: IndexedStack(
-          index: _selected,
-          children: [
-            HomePage(),
-            SettingPage(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.red,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            HiddenDrawer.of(context).toggle();
-          },
-        ),
-        title: Text('Home Page'),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: Text('Home Page'),
-        ),
-      ),
-    );
-  }
-}
-
-class SettingPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.green,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            HiddenDrawer.of(context).toggle();
-          },
-        ),
-        title: Text('Setting Page'),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: Text('Setting Page'),
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              onPressed: () {
+                print('icon button pressed');
+                _controller.toggle();
+              },
+              icon: Icon(Icons.menu),
+            ),
+            title: Text('zoom_drawer Example'),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  print('icon button pressed');
+                  _controller.toggle();
+                },
+                icon: Icon(Icons.menu),
+              ),
+            ],
+          ),
+          body: Center(
+            child: Text('zoom_drawer Example'),
+          ),
         ),
       ),
     );

@@ -1,6 +1,6 @@
 # example
 
-A example application of hidden_drawer.
+A new Flutter project.
 
 ## Getting Started
 
