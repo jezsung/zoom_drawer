@@ -6,9 +6,11 @@ class DefaultZoomDrawerController extends StatefulWidget {
   const DefaultZoomDrawerController({
     Key? key,
     this.duration = const Duration(milliseconds: 300),
+    required this.child,
   }) : super(key: key);
 
   final Duration duration;
+  final Widget child;
 
   static ZoomDrawerController of(BuildContext context) {
     final _ZoomDrawerControllerScope? scope = context.dependOnInheritedWidgetOfExactType<_ZoomDrawerControllerScope>();
@@ -45,7 +47,7 @@ class _DefaultZoomDrawerControllerState extends State<DefaultZoomDrawerControlle
     return _ZoomDrawerControllerScope(
       controller: _controller,
       enabled: TickerMode.of(context),
-      child: Container(),
+      child: widget.child,
     );
   }
 }
